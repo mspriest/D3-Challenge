@@ -74,8 +74,8 @@ function updateToolTip(chosenXAxis, circlesGroup) {
   }
 
   var toolTip = d3.tip()
-    .attr("class", "tooltip")
-    // .offset([80, -60])
+    .attr("class", "d3-tip")
+    .offset([140, 90])
     .html(function(d) {
       return (`${d.state}<br>${label} ${d[chosenXAxis]}`);
     });
@@ -133,9 +133,8 @@ d3.csv("data/data.csv").then(function(censusData, err) {
     .append("circle")
     .attr("cx", d => xLinearScale(d[chosenXAxis]))
     .attr("cy", d => yLinearScale(d.healthcare))
-    .attr("r", 20)
-    .attr("fill", "blue")
-    .attr("opacity", ".5");
+    .attr("r", 15)
+    .classed("stateCircle", true);
 
   // Create group for two x-axis labels
   var labelsGroup = chartGroup.append("g")
@@ -165,7 +164,7 @@ d3.csv("data/data.csv").then(function(censusData, err) {
     .text("Lacks Healthcare (%)");
 
   // updateToolTip function above csv import
-  var circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
+  var circlesGroup = updateToolTip(chosenXAxis, circlesGroup, circlesText);
 
   // x axis labels event listener
   labelsGroup.selectAll("text")
