@@ -60,6 +60,16 @@ function renderCircles(circlesGroup, newXScale, chosenXAxis) {
 
   return circlesGroup;
 }
+// function used for updating circles text with a transition to
+// new circles
+function renderText(circlesText, newXScale, chosenXAxis) {
+
+  circlesText.transition()
+    .duration(1000)
+    .attr("dx", d => newXScale(d[chosenXAxis]));
+
+  return circlesText;
+}
 
 // function used for updating circles group with new tooltip
 function updateToolTip(chosenXAxis, circlesGroup) {
@@ -75,7 +85,6 @@ function updateToolTip(chosenXAxis, circlesGroup) {
 
   var toolTip = d3.tip()
     .attr("class", "d3-tip")
-    .offset([140, 90])
     .html(function(d) {
       return (`${d.state}<br>${label} ${d[chosenXAxis]}`);
     });
@@ -127,14 +136,23 @@ d3.csv("data/data.csv").then(function(censusData, err) {
     .call(leftAxis);
 
   // append initial circles
-  var circlesGroup = chartGroup.selectAll("circle")
+  var circlesGroup = chartGroup.selectAll("g circle")
     .data(censusData)
     .enter()
-    .append("circle")
+    .append("g")
+
+  var circlesXY = circlesGroup.append("circle")
     .attr("cx", d => xLinearScale(d[chosenXAxis]))
     .attr("cy", d => yLinearScale(d.healthcare))
     .attr("r", 15)
     .classed("stateCircle", true);
+
+  // add text to circles
+  var circlesText = circlesGroup.append("text")
+    .text(d => d.abbr)
+    .attr("dx", d => xLinearScale(d[chosenXAxis]))
+    .attr("dy", d => yLinearScale(d.healthcare) +5)
+    .classed("stateText", true);
 
   // Create group for two x-axis labels
   var labelsGroup = chartGroup.append("g")
@@ -164,7 +182,7 @@ d3.csv("data/data.csv").then(function(censusData, err) {
     .text("Lacks Healthcare (%)");
 
   // updateToolTip function above csv import
-  var circlesGroup = updateToolTip(chosenXAxis, circlesGroup, circlesText);
+  var circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
 
   // x axis labels event listener
   labelsGroup.selectAll("text")
@@ -186,8 +204,12 @@ d3.csv("data/data.csv").then(function(censusData, err) {
         xAxis = renderAxes(xLinearScale, xAxis);
 
         // updates circles with new x values
-        circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
+        // circlesGroup = renderCircles(circlesGroup, xLinearScale, chosenXAxis);
+        circlesXY = renderCircles(circlesXY, xLinearScale, chosenXAxis);
 
+        // update circles text with new x values
+        circlesText = renderText(circlesText, xLinearScale, chosenXAxis)
+        
         // updates tooltips with new info
         circlesGroup = updateToolTip(chosenXAxis, circlesGroup);
 
@@ -200,14 +222,7 @@ d3.csv("data/data.csv").then(function(censusData, err) {
             .classed("active", false)
             .classed("inactive", true);
         }
-        else {
-          ageLabel
-            .classed("active", false)
-            .classed("inactive", true);
-          povertyLabel
-            .classed("active", true)
-            .classed("inactive", false);
-        }
+
       }
     });
 }).catch(function(error) {
